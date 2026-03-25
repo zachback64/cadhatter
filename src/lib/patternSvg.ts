@@ -72,12 +72,11 @@ function buildFoldBanners(edges: FoldEdge[]): string {
 function buildCalibrationSquare(_svgW: number, svgH: number): string {
   const sq = 25.4  // 25.4mm = exactly 1 inch
   const x = 6
-  const y = svgH - sq - 14
+  const y = svgH - sq - 16
   return `
     <text x="${x + sq / 2}" y="${y - 4}" text-anchor="middle" font-size="4" font-weight="bold" ${PIECE_FONT}>TEST SQUARE</text>
     <rect x="${x}" y="${y}" width="${sq}" height="${sq}" fill="none" stroke="black" stroke-width="0.5"/>
-    <text x="${x - 2}" y="${y + sq / 2}" text-anchor="end" dominant-baseline="middle" font-size="3.5" ${PIECE_FONT}>1 INCH</text>
-    <text x="${x + sq / 2}" y="${y + sq + 5}" text-anchor="middle" font-size="3.5" ${PIECE_FONT}>25mm</text>`
+    <text x="${x + sq / 2}" y="${y + sq + 5}" text-anchor="middle" font-size="3.5" ${PIECE_FONT}>25mm / 1 inch</text>`
 }
 
 export function buildAllPiecesSvg(pieces: PatternPiece[]): string {
