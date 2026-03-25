@@ -69,7 +69,7 @@ function buildFoldBanners(edges: FoldEdge[]): string {
   }).join('\n')
 }
 
-function buildCalibrationSquare(svgW: number, svgH: number): string {
+function buildCalibrationSquare(_svgW: number, svgH: number): string {
   const sq = 25.4  // 25.4mm = exactly 1 inch
   const x = 6
   const y = svgH - sq - 14
