@@ -2,6 +2,7 @@ import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Environment } from '@react-three/drei'
 import type { HatParams } from '../types'
 import { computeCrown } from '../lib/hatMath'
+import * as THREE from 'three'
 
 interface Props {
   params: HatParams
@@ -14,9 +15,9 @@ export function HatScene({ params }: Props) {
   const sideRadiusTop = rCrown * MM
   const sideRadiusBottom = rBottom * MM
   const sideHeight = params.hatHeight * MM
-  const brimInner = rBottom * MM
-  const brimOuter = (rBottom + params.brimWidth) * MM
-  const brimTilt = (params.brimAngle * Math.PI) / 180
+  const brimInner = rBottom * MM  // inner horizontal radius (unchanged name, same value)
+  const phi = (params.brimAngle * Math.PI) / 180
+  const brimDrop = params.brimWidth * Math.tan(phi) * MM  // vertical droop of outer edge
 
   return (
     <Canvas camera={{ position: [0, 0.15, 0.35], fov: 45 }}>
@@ -36,9 +37,13 @@ export function HatScene({ params }: Props) {
         <meshStandardMaterial color="#f0ece4" side={2} />
       </mesh>
 
-      {/* Brim — RingGeometry defaults to XY plane; rotate -90°+brimTilt so it sits flat with angle */}
-      <mesh position={[0, -sideHeight / 2, 0]} rotation={[-Math.PI / 2 + brimTilt, 0, 0]}>
-        <ringGeometry args={[brimInner, brimOuter, 64]} />
+      {/* Brim — LatheGeometry revolves a 2-point profile around Y: inner edge flush at crown bottom,
+          outer edge drooping down by brimDrop. No rotation needed. */}
+      <mesh position={[0, -sideHeight / 2, 0]}>
+        <latheGeometry args={[[
+          new THREE.Vector2(brimInner, 0),
+          new THREE.Vector2((rBottom + params.brimWidth) * MM, -brimDrop),
+        ], 64]} />
         <meshStandardMaterial color="#f0ece4" side={2} />
       </mesh>
 
