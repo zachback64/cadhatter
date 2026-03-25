@@ -47,6 +47,16 @@ export function HatScene({ params }: Props) {
         <meshStandardMaterial color="#f0ece4" side={2} />
       </mesh>
 
+      {/* Brim stitch — torus at outer brim edge */}
+      <mesh
+        position={[0, -sideHeight / 2 - brimDrop, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        castShadow
+      >
+        <torusGeometry args={[(rBottom + params.brimWidth) * MM, 0.0015, 8, 128]} />
+        <meshStandardMaterial color="#5a3e2b" />
+      </mesh>
+
       {/* Invisible ground plane — catches shadow only */}
       <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, -sideHeight / 2 - brimDrop - 0.01, 0]}>
         <planeGeometry args={[2, 2]} />
