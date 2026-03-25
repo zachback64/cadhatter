@@ -35,3 +35,14 @@ test('shows Remove button after file selected, then reverts on remove', () => {
   expect(screen.getByRole('button', { name: /upload fabric/i })).toBeInTheDocument()
   expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url')
 })
+
+test('revokes URL on unmount if texture is loaded', () => {
+  const { unmount } = render(<AppPage />)
+  const input = document.querySelector('input[type="file"]') as HTMLInputElement
+  const file = new File([''], 'fabric.png', { type: 'image/png' })
+  fireEvent.change(input, { target: { files: [file] } })
+  // URL is now set
+
+  unmount()
+  expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url')
+})

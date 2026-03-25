@@ -13,23 +13,29 @@ export function AppPage() {
   const [tab, setTab] = useState<Tab>('3d')
   const [fabricUrl, setFabricUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const fabricUrlRef = useRef<string | null>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    if (fabricUrl) URL.revokeObjectURL(fabricUrl)
-    setFabricUrl(URL.createObjectURL(file))
+    if (fabricUrlRef.current) URL.revokeObjectURL(fabricUrlRef.current)
+    const url = URL.createObjectURL(file)
+    fabricUrlRef.current = url
+    setFabricUrl(url)
   }
 
   const handleRemoveFabric = () => {
-    if (fabricUrl) URL.revokeObjectURL(fabricUrl)
+    if (fabricUrlRef.current) {
+      URL.revokeObjectURL(fabricUrlRef.current)
+      fabricUrlRef.current = null
+    }
     setFabricUrl(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   useEffect(() => {
-    return () => { if (fabricUrl) URL.revokeObjectURL(fabricUrl) }
-  }, [])  // cleanup on unmount only
+    return () => { if (fabricUrlRef.current) URL.revokeObjectURL(fabricUrlRef.current) }
+  }, [])
 
   const geo = computeHat(params)
 
