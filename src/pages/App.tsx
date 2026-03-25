@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { DEFAULT_PARAMS } from '../types'
 import type { HatParams } from '../types'
 import { computeHat } from '../lib/hatMath'
@@ -11,6 +11,25 @@ type Tab = '3d' | 'pattern'
 export function AppPage() {
   const [params, setParams] = useState<HatParams>(DEFAULT_PARAMS)
   const [tab, setTab] = useState<Tab>('3d')
+  const [fabricUrl, setFabricUrl] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (fabricUrl) URL.revokeObjectURL(fabricUrl)
+    setFabricUrl(URL.createObjectURL(file))
+  }
+
+  const handleRemoveFabric = () => {
+    if (fabricUrl) URL.revokeObjectURL(fabricUrl)
+    setFabricUrl(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  useEffect(() => {
+    return () => { if (fabricUrl) URL.revokeObjectURL(fabricUrl) }
+  }, [])  // cleanup on unmount only
 
   const geo = computeHat(params)
 
@@ -58,13 +77,39 @@ export function AppPage() {
           {/* Tab content */}
           <div className="flex-1 overflow-hidden">
             {tab === '3d' ? (
-              <HatScene params={params} />
+              <div className="relative h-full">
+                <HatScene params={params} fabricUrl={fabricUrl ?? undefined} />
+                <div className="absolute top-2 right-2">
+                  {fabricUrl ? (
+                    <button
+                      onClick={handleRemoveFabric}
+                      className="text-sm bg-white border border-gray-300 rounded px-3 py-1 shadow-sm hover:bg-gray-50"
+                    >
+                      ✕ Remove fabric
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="text-sm bg-white border border-gray-300 rounded px-3 py-1 shadow-sm hover:bg-gray-50"
+                    >
+                      Upload fabric
+                    </button>
+                  )}
+                </div>
+              </div>
             ) : (
               <PatternView pieces={geo.patternPieces} params={params} onParamsChange={setParams} />
             )}
           </div>
         </div>
       </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
     </div>
   )
 }
