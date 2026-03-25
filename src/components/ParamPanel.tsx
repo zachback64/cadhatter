@@ -1,4 +1,4 @@
-import { HatParams } from '../types'
+import type { HatParams } from '../types'
 import { SliderInput } from './SliderInput'
 
 const CM = 0.1  // multiply mm by this to display cm

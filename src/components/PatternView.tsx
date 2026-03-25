@@ -1,4 +1,4 @@
-import { PatternPiece, HatParams } from '../types'
+import type { PatternPiece, HatParams } from '../types'
 import { buildPieceSvg, buildAllPiecesSvg } from '../lib/patternSvg'
 import { tilePieces } from '../lib/printTile'
 

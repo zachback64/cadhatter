@@ -1,4 +1,4 @@
-import { HatParams, HatGeometry, PatternPiece } from '../types'
+import type { HatParams, HatGeometry, PatternPiece } from '../types'
 
 const DEG = Math.PI / 180
 const TWO_PI = 2 * Math.PI

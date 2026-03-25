@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Environment } from '@react-three/drei'
-import { HatParams } from '../types'
+import type { HatParams } from '../types'
 import { computeCrown } from '../lib/hatMath'
 
 interface Props {

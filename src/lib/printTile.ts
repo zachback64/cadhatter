@@ -1,4 +1,4 @@
-import { PatternPiece } from '../types'
+import type { PatternPiece } from '../types'
 import { buildPieceSvg } from './patternSvg'
 
 export const PAPER_SIZES = {

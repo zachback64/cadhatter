@@ -1,4 +1,4 @@
-import { PatternPiece } from '../types'
+import type { PatternPiece } from '../types'
 
 export const PIECE_FONT = 'font-family="Arial, sans-serif"'
 const PADDING = 20 // mm extra around piece for labels

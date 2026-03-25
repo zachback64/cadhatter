@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { HatParams, DEFAULT_PARAMS } from '../types'
+import { DEFAULT_PARAMS } from '../types'
+import type { HatParams } from '../types'
 import { computeHat } from '../lib/hatMath'
 import { ParamPanel } from '../components/ParamPanel'
 import { HatScene } from '../components/HatScene'
