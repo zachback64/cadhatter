@@ -20,31 +20,37 @@ export function HatScene({ params }: Props) {
   const brimDrop = params.brimWidth * Math.tan(phi) * MM  // vertical droop of outer edge
 
   return (
-    <Canvas camera={{ position: [0, 0.15, 0.35], fov: 45 }}>
+    <Canvas camera={{ position: [0, 0.15, 0.35], fov: 45 }} shadows>
       <ambientLight intensity={0.6} />
-      <directionalLight position={[1, 2, 1]} intensity={1} />
+      <directionalLight position={[2, 4, 2]} intensity={1} castShadow shadow-mapSize={[1024, 1024]} />
       <Environment preset="city" />
 
       {/* Crown top — rotated -90° around X so it lies flat (CircleGeometry defaults to XY plane) */}
-      <mesh position={[0, sideHeight / 2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[0, sideHeight / 2, 0]} rotation={[-Math.PI / 2, 0, 0]} castShadow receiveShadow>
         <circleGeometry args={[sideRadiusTop, 64]} />
         <meshStandardMaterial color="#f0ece4" side={2} />
       </mesh>
 
       {/* Side panel */}
-      <mesh>
+      <mesh castShadow receiveShadow>
         <cylinderGeometry args={[sideRadiusTop, sideRadiusBottom, sideHeight, 64, 1, true]} />
         <meshStandardMaterial color="#f0ece4" side={2} />
       </mesh>
 
       {/* Brim — LatheGeometry revolves a 2-point profile around Y: inner edge flush at crown bottom,
           outer edge drooping down by brimDrop. No rotation needed. */}
-      <mesh position={[0, -sideHeight / 2, 0]}>
+      <mesh position={[0, -sideHeight / 2, 0]} castShadow receiveShadow>
         <latheGeometry args={[[
           new THREE.Vector2(brimInner, 0),
           new THREE.Vector2((rBottom + params.brimWidth) * MM, -brimDrop),
         ], 64]} />
         <meshStandardMaterial color="#f0ece4" side={2} />
+      </mesh>
+
+      {/* Invisible ground plane — catches shadow only */}
+      <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, -sideHeight / 2 - brimDrop - 0.01, 0]}>
+        <planeGeometry args={[2, 2]} />
+        <shadowMaterial opacity={0.25} />
       </mesh>
 
       <OrbitControls enablePan={false} minDistance={0.1} maxDistance={1} />
