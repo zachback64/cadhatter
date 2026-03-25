@@ -19,7 +19,7 @@ describe('buildPieceSvg', () => {
   it('omits calibration square when not requested', () => {
     const geo = computeHat(DEFAULT_PARAMS)
     const svg = buildPieceSvg(geo.patternPieces[1], { calibrationSquare: false })
-    expect(svg).not.toContain('10mm')
+    expect(svg).not.toContain('TEST SQUARE')
   })
 
   it('includes notch marks when showNotches is true', () => {

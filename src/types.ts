@@ -30,6 +30,11 @@ export interface Notch {
   angle: number; // radians, direction perpendicular to edge
 }
 
+export interface FoldEdge {
+  x1: number; y1: number;
+  x2: number; y2: number;
+}
+
 export interface PatternPiece {
   id: 'crown' | 'side' | 'brim';
   label: string;       // e.g. "BRIM"
@@ -38,7 +43,8 @@ export interface PatternPiece {
   sewingPath: string;  // SVG path data (the actual shape to sew along)
   cutPath: string;     // SVG path data (sewingPath + seamAllowance offset)
   notches: Notch[];
-  boundingBox: { width: number; height: number }; // mm, of cutPath
+  foldEdges: FoldEdge[]; // piece-coord positions of fold edge lines
+  boundingBox: { width: number; height: number; minX: number; minY: number }; // mm, of cutPath
 }
 
 export interface HatGeometry {

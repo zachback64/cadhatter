@@ -1,4 +1,4 @@
-import type { HatParams, HatGeometry, PatternPiece } from '../types'
+import type { HatParams, HatGeometry, PatternPiece, FoldEdge } from '../types'
 
 const DEG = Math.PI / 180
 const TWO_PI = 2 * Math.PI
@@ -116,7 +116,11 @@ function buildCrownPiece(rCrown: number, sa: number, showNotches: boolean): Patt
     sewingPath,
     cutPath,
     notches,
-    boundingBox: { width: rCut, height: rCut },
+    foldEdges: [
+      { x1: 0, y1: 0, x2: 0, y2: rCut },   // left vertical fold edge
+      { x1: 0, y1: 0, x2: rCut, y2: 0 },   // bottom horizontal fold edge
+    ] as FoldEdge[],
+    boundingBox: { minX: 0, minY: 0, width: rCut, height: rCut },
   }
 }
 
@@ -150,7 +154,10 @@ function buildSidePiece(
       sewingPath,
       cutPath,
       notches,
-      boundingBox: { width: goreW + sa * 2, height: h + sa * 2 },
+      foldEdges: goreCount === 1
+        ? [{ x1: -sa, y1: -sa, x2: -sa, y2: h + sa }] as FoldEdge[]
+        : [],
+      boundingBox: { minX: -sa, minY: -sa, width: goreW + sa * 2, height: h + sa * 2 },
     }
   }
 
@@ -202,7 +209,10 @@ function buildSidePiece(
     sewingPath,
     cutPath,
     notches,
-    boundingBox: { width: R2c * 2, height: R2c * 2 },
+    foldEdges: goreCount === 1
+      ? [{ x1: R2c, y1: 0, x2: R1c, y2: 0 }] as FoldEdge[]  // bottom fold edge at angle=0
+      : [],
+    boundingBox: { minX: 0, minY: 0, width: R2c * 2, height: R2c * 2 },
   }
 }
 
@@ -245,6 +255,10 @@ function buildBrimPiece(brim: BrimResult, sa: number, showNotches: boolean): Pat
       ]
     : []
 
+  // Tight bounding box: x from brimMinX to soc, y from 0 to brimHeight
+  const brimMinX = thetaHalf > Math.PI / 2 ? soc * Math.cos(thetaHalf) : Math.min(0, soc * Math.cos(thetaHalf))
+  const brimHeight = thetaHalf >= Math.PI / 2 ? soc : soc * Math.sin(thetaHalf)
+
   return {
     id: 'brim',
     label: 'BRIM',
@@ -253,6 +267,7 @@ function buildBrimPiece(brim: BrimResult, sa: number, showNotches: boolean): Pat
     sewingPath,
     cutPath,
     notches,
-    boundingBox: { width: soc * 2, height: soc * 2 },
+    foldEdges: [{ x1: soc, y1: 0, x2: sic, y2: 0 }] as FoldEdge[],  // fold edge at angle=0 along y=0
+    boundingBox: { minX: brimMinX, minY: 0, width: soc - brimMinX, height: brimHeight },
   }
 }

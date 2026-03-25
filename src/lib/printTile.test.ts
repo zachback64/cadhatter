@@ -22,6 +22,6 @@ describe('tilePieces', () => {
   it('page 1 contains calibration square', () => {
     const geo = computeHat(DEFAULT_PARAMS)
     const pages = tilePieces(geo.patternPieces, 'letter')
-    expect(pages[0]).toContain('10mm')
+    expect(pages[0]).toContain('TEST SQUARE')
   })
 })

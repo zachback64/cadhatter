@@ -1,22 +1,23 @@
-import type { PatternPiece } from '../types'
+import type { PatternPiece, FoldEdge } from '../types'
 
 export const PIECE_FONT = 'font-family="Arial, sans-serif"'
-const PADDING = 20 // mm extra around piece for labels
+const PADDING = 25   // mm of space around piece
+const BANNER_W = 10  // mm height/width of PLACE ON FOLD banner
 
 interface SvgOptions {
   calibrationSquare?: boolean
 }
 
 export function buildPieceSvg(piece: PatternPiece, opts: SvgOptions): string {
-  const { width, height } = piece.boundingBox
+  const { width, height, minX, minY } = piece.boundingBox
   const vw = width + PADDING * 2
   const vh = height + PADDING * 2
-  const tx = PADDING
-  const ty = PADDING
+  // Shift piece so its minimum coordinates sit at PADDING in SVG space
+  const tx = PADDING - minX
+  const ty = PADDING - minY
 
   const calibration = opts.calibrationSquare
-    ? `<rect x="5" y="${vh - 25}" width="10" height="10" fill="none" stroke="black" stroke-width="0.5"/>
-       <text x="5" y="${vh - 12}" font-size="4" ${PIECE_FONT}>10mm / 0.39in</text>`
+    ? buildCalibrationSquare(vw, vh)
     : ''
 
   const notchMarks = piece.notches.map(n => {
@@ -26,22 +27,22 @@ export function buildPieceSvg(piece: PatternPiece, opts: SvgOptions): string {
       fill="black" stroke="none"/>`
   }).join('\n')
 
-  const foldBanners = piece.onFold
-    ? buildFoldBanners(piece.id, width, height)
-    : ''
+  const foldBanners = buildFoldBanners(piece.foldEdges)
 
-  const labelY = height / 2
+  // Label centered in bounding box (piece coordinates)
+  const labelX = minX + width / 2
+  const labelY = minY + height / 2
   const label = `
-    <text x="${width / 2}" y="${labelY - 8}" text-anchor="middle" font-size="7" font-weight="bold" ${PIECE_FONT}>${piece.label}</text>
-    <text x="${width / 2}" y="${labelY + 2}" text-anchor="middle" font-size="5.5" ${PIECE_FONT}>CUT ${piece.cutCount}</text>
-    <text x="${width / 2}" y="${labelY + 10}" text-anchor="middle" font-size="4" fill="#666" ${PIECE_FONT}>Cadhatter</text>`
+    <text x="${labelX}" y="${labelY - 9}" text-anchor="middle" font-size="13" font-weight="bold" ${PIECE_FONT}>${piece.label}</text>
+    <text x="${labelX}" y="${labelY + 6}" text-anchor="middle" font-size="7" ${PIECE_FONT}>CUT ${piece.cutCount}</text>
+    <text x="${labelX}" y="${labelY + 16}" text-anchor="middle" font-size="4.5" fill="#999" ${PIECE_FONT}>Cadhatter · ${new Date().toLocaleDateString()}</text>`
 
   return `<svg xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 ${vw} ${vh}"
     width="${vw}mm" height="${vh}mm">
   <g transform="translate(${tx} ${ty})">
-    <path d="${piece.sewingPath}" fill="none" stroke="black" stroke-width="0.5" stroke-dasharray="3 3"/>
-    <path d="${piece.cutPath}" fill="none" stroke="black" stroke-width="0.5"/>
+    <path d="${piece.sewingPath}" fill="none" stroke="#555" stroke-width="0.5" stroke-dasharray="3 2"/>
+    <path d="${piece.cutPath}" fill="none" stroke="black" stroke-width="0.7"/>
     ${foldBanners}
     ${notchMarks}
     ${label}
@@ -50,17 +51,33 @@ export function buildPieceSvg(piece: PatternPiece, opts: SvgOptions): string {
 </svg>`
 }
 
-function buildFoldBanners(id: PatternPiece['id'], width: number, height: number): string {
-  if (id === 'crown') {
-    return `
-      <rect x="-8" y="0" width="7" height="${height}" fill="#eee" stroke="black" stroke-width="0.3"/>
-      <text x="-4.5" y="${height / 2}" text-anchor="middle" font-size="4" transform="rotate(-90 -4.5 ${height / 2})" ${PIECE_FONT}>PLACE ON FOLD</text>
-      <rect x="0" y="-8" width="${width}" height="7" fill="#eee" stroke="black" stroke-width="0.3"/>
-      <text x="${width / 2}" y="-2.5" text-anchor="middle" font-size="4" ${PIECE_FONT}>PLACE ON FOLD</text>`
-  }
+function buildFoldBanners(edges: FoldEdge[]): string {
+  return edges.map(e => {
+    const dx = e.x2 - e.x1
+    const dy = e.y2 - e.y1
+    const len = Math.sqrt(dx * dx + dy * dy)
+    if (len < 1) return ''
+    const cx = (e.x1 + e.x2) / 2
+    const cy = (e.y1 + e.y2) / 2
+    const angleDeg = Math.atan2(dy, dx) * 180 / Math.PI
+    return `<g transform="translate(${cx} ${cy}) rotate(${angleDeg})">
+        <rect x="${-len / 2}" y="${-BANNER_W / 2}" width="${len}" height="${BANNER_W}"
+          fill="white" stroke="black" stroke-width="0.8"/>
+        <text x="0" y="0" text-anchor="middle" dominant-baseline="middle"
+          font-size="5" font-weight="bold" letter-spacing="0.8" ${PIECE_FONT}>PLACE ON FOLD</text>
+      </g>`
+  }).join('\n')
+}
+
+function buildCalibrationSquare(svgW: number, svgH: number): string {
+  const sq = 25.4  // 25.4mm = exactly 1 inch
+  const x = 6
+  const y = svgH - sq - 14
   return `
-    <rect x="-8" y="0" width="7" height="${height}" fill="#eee" stroke="black" stroke-width="0.3"/>
-    <text x="-4.5" y="${height / 2}" text-anchor="middle" font-size="4" transform="rotate(-90 -4.5 ${height / 2})" ${PIECE_FONT}>PLACE ON FOLD</text>`
+    <text x="${x + sq / 2}" y="${y - 4}" text-anchor="middle" font-size="4" font-weight="bold" ${PIECE_FONT}>TEST SQUARE</text>
+    <rect x="${x}" y="${y}" width="${sq}" height="${sq}" fill="none" stroke="black" stroke-width="0.5"/>
+    <text x="${x - 2}" y="${y + sq / 2}" text-anchor="end" dominant-baseline="middle" font-size="3.5" ${PIECE_FONT}>1 INCH</text>
+    <text x="${x + sq / 2}" y="${y + sq + 5}" text-anchor="middle" font-size="3.5" ${PIECE_FONT}>25mm</text>`
 }
 
 export function buildAllPiecesSvg(pieces: PatternPiece[]): string {
@@ -72,8 +89,8 @@ export function buildAllPiecesSvg(pieces: PatternPiece[]): string {
   for (let i = 0; i < pieces.length; i++) {
     const p = pieces[i]
     const pieceSvg = buildPieceSvg(p, { calibrationSquare: i === 0 })
-    const h = p.boundingBox.height + (PADDING * 2)
-    const w = p.boundingBox.width + (PADDING * 2)
+    const h = p.boundingBox.height + PADDING * 2
+    const w = p.boundingBox.width + PADDING * 2
     groups.push(`<g transform="translate(0 ${currentY})">${pieceSvg}</g>`)
     currentY += h + GAP
     if (w > totalW) totalW = w
