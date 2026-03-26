@@ -25,7 +25,7 @@ export function tilePieces(
 
     // If fits on one page, emit single page
     if (pw <= printW && ph <= printH) {
-      const pieceSvg = buildPieceSvg(piece, { calibrationSquare: pages.length === 0 })
+      const pieceSvg = buildPieceSvg(piece)
       pages.push(wrapInPage(pieceSvg, paper, pages.length + 1, MARGIN))
       continue
     }

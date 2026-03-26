@@ -46,11 +46,11 @@ export function PatternView({ pieces, params, onParamsChange }: Props) {
     <div className="flex flex-col h-full">
       {/* Pattern pieces scroll area */}
       <div className="flex-1 overflow-y-auto p-4 bg-gray-50 flex flex-col gap-6 items-center">
-        {pieces.map((piece, i) => (
+        {pieces.map((piece) => (
           <div key={piece.id} className="bg-white rounded shadow-sm p-2">
             <div
               dangerouslySetInnerHTML={{
-                __html: buildPieceSvg(piece, { calibrationSquare: i === 0 }),
+                __html: buildPieceSvg(piece),
               }}
             />
           </div>
