@@ -16,19 +16,19 @@ interface HatMeshProps {
   MM: number
 }
 
-function PlainHat({ sideRadiusTop, sideRadiusBottom, sideHeight, brimInner, brimWidth, rBottom, brimDrop, MM }: HatMeshProps) {
+function PlainHat({ sideRadiusTop, sideRadiusBottom, sideHeight, brimInner, brimWidth, rBottom, brimDrop, MM, hatColor }: HatMeshProps & { hatColor: string }) {
   return (
     <>
       {/* Crown top */}
       <mesh position={[0, sideHeight / 2, 0]} rotation={[-Math.PI / 2, 0, 0]} castShadow receiveShadow>
         <circleGeometry args={[sideRadiusTop, 64]} />
-        <meshStandardMaterial color="#f0ece4" side={2} />
+        <meshStandardMaterial color={hatColor} side={2} />
       </mesh>
 
       {/* Side panel */}
       <mesh castShadow receiveShadow>
         <cylinderGeometry args={[sideRadiusTop, sideRadiusBottom, sideHeight, 64, 1, true]} />
-        <meshStandardMaterial color="#f0ece4" side={2} />
+        <meshStandardMaterial color={hatColor} side={2} />
       </mesh>
 
       {/* Brim */}
@@ -37,7 +37,7 @@ function PlainHat({ sideRadiusTop, sideRadiusBottom, sideHeight, brimInner, brim
           new THREE.Vector2(brimInner, 0),
           new THREE.Vector2((rBottom + brimWidth) * MM, -brimDrop),
         ], 64]} />
-        <meshStandardMaterial color="#f0ece4" side={2} />
+        <meshStandardMaterial color={hatColor} side={2} />
       </mesh>
     </>
   )
@@ -77,9 +77,10 @@ function FabricHat({ fabricUrl, sideRadiusTop, sideRadiusBottom, sideHeight, bri
 interface Props {
   params: HatParams
   fabricUrl?: string
+  hatColor?: string
 }
 
-export function HatScene({ params, fabricUrl }: Props) {
+export function HatScene({ params, fabricUrl, hatColor }: Props) {
   const MM = 0.001 // convert mm to Three.js units (1 unit = 1m)
   const { rBottom, rCrown } = computeCrown(params)
 
@@ -104,7 +105,7 @@ export function HatScene({ params, fabricUrl }: Props) {
       {/* Hat meshes — plain or fabric-textured */}
       {fabricUrl
         ? <FabricHat fabricUrl={fabricUrl} {...hatMeshProps} />
-        : <PlainHat {...hatMeshProps} />
+        : <PlainHat hatColor={hatColor ?? '#f0ece4'} {...hatMeshProps} />
       }
 
       {/* Brim stitch — torus at outer brim edge */}

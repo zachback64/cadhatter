@@ -46,3 +46,30 @@ test('revokes URL on unmount if texture is loaded', () => {
   unmount()
   expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url')
 })
+
+const SWATCHES = [
+  { name: 'Natural', hex: '#f0ece4' },
+  { name: 'Navy', hex: '#1e3a5f' },
+  { name: 'Black', hex: '#1a1a1a' },
+  { name: 'Olive', hex: '#6b7c45' },
+  { name: 'Burgundy', hex: '#6e1c2e' },
+  { name: 'Sand', hex: '#c8a96e' },
+]
+
+test('renders color swatches in 3D tab', () => {
+  render(<AppPage />)
+  for (const swatch of SWATCHES) {
+    expect(screen.getByTitle(swatch.name)).toBeInTheDocument()
+  }
+})
+
+test('swatches are disabled when fabric is loaded', () => {
+  render(<AppPage />)
+  const input = document.querySelector('input[type="file"]') as HTMLInputElement
+  const file = new File([''], 'fabric.png', { type: 'image/png' })
+  fireEvent.change(input, { target: { files: [file] } })
+
+  const swatchBar = screen.getByTestId('swatch-bar')
+  expect(swatchBar).toHaveStyle('pointer-events: none')
+  expect(swatchBar).toHaveStyle('opacity: 0.4')
+})

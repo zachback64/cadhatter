@@ -8,10 +8,20 @@ import { PatternView } from '../components/PatternView'
 
 type Tab = '3d' | 'pattern'
 
+const SWATCHES = [
+  { name: 'Natural',  hex: '#f0ece4' },
+  { name: 'Navy',     hex: '#1e3a5f' },
+  { name: 'Black',    hex: '#1a1a1a' },
+  { name: 'Olive',    hex: '#6b7c45' },
+  { name: 'Burgundy', hex: '#6e1c2e' },
+  { name: 'Sand',     hex: '#c8a96e' },
+] as const
+
 export function AppPage() {
   const [params, setParams] = useState<HatParams>(DEFAULT_PARAMS)
   const [tab, setTab] = useState<Tab>('3d')
   const [fabricUrl, setFabricUrl] = useState<string | null>(null)
+  const [hatColor, setHatColor] = useState('#f0ece4')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const fabricUrlRef = useRef<string | null>(null)
 
@@ -84,7 +94,7 @@ export function AppPage() {
           <div className="flex-1 overflow-hidden">
             {tab === '3d' ? (
               <div className="relative h-full">
-                <HatScene params={params} fabricUrl={fabricUrl ?? undefined} />
+                <HatScene params={params} fabricUrl={fabricUrl ?? undefined} hatColor={hatColor} />
                 <div className="absolute top-2 right-2">
                   {fabricUrl ? (
                     <button
@@ -101,6 +111,36 @@ export function AppPage() {
                       Upload fabric
                     </button>
                   )}
+                </div>
+
+                {/* Color swatch bar */}
+                <div
+                  data-testid="swatch-bar"
+                  className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm rounded-full px-3 py-2 shadow-sm"
+                  style={fabricUrl ? { opacity: 0.4, pointerEvents: 'none' } : undefined}
+                >
+                  {SWATCHES.map(s => (
+                    <button
+                      key={s.hex}
+                      title={s.name}
+                      onClick={() => setHatColor(s.hex)}
+                      className="w-6 h-6 rounded-full border-2 transition-transform hover:scale-110"
+                      style={{
+                        backgroundColor: s.hex,
+                        borderColor: hatColor === s.hex ? '#374151' : 'transparent',
+                        outline: hatColor === s.hex ? '2px solid white' : 'none',
+                        outlineOffset: '-3px',
+                      }}
+                    />
+                  ))}
+                  <input
+                    type="color"
+                    value={hatColor}
+                    onChange={e => setHatColor(e.target.value)}
+                    title="Custom color"
+                    className="w-6 h-6 rounded-full cursor-pointer border-2 border-transparent hover:scale-110 transition-transform"
+                    style={{ padding: 0 }}
+                  />
                 </div>
               </div>
             ) : (
