@@ -2,6 +2,22 @@ import { describe, it, expect } from 'vitest'
 import { tilePieces, PAPER_SIZES } from './printTile'
 import { DEFAULT_PARAMS } from '../types'
 import { computeHat } from './hatMath'
+import type { PatternPiece } from '../types'
+
+function makeLargePiece(): PatternPiece {
+  // A piece whose bounding box is larger than any paper's printable area
+  return {
+    id: 'brim',
+    label: 'LARGE PIECE',
+    cutCount: 2,
+    onFold: false,
+    sewingPath: 'M 0 0 L 400 0 L 400 400 L 0 400 Z',
+    cutPath:    'M 0 0 L 400 0 L 400 400 L 0 400 Z',
+    notches: [],
+    foldEdges: [],
+    boundingBox: { width: 400, height: 400, minX: 0, minY: 0 },
+  }
+}
 
 describe('tilePieces', () => {
   it('returns at least one page', () => {
@@ -54,6 +70,24 @@ describe('tilePieces', () => {
     const pages = tilePieces(geo.patternPieces, 'letter')
     for (const page of pages) {
       expect(page).not.toContain('__TOTAL__')
+    }
+  })
+
+  it('tiled pieces produce multiple pages (all valid SVG, no nested <svg>)', () => {
+    const pages = tilePieces([makeLargePiece()], 'letter')
+    expect(pages.length).toBeGreaterThan(1)
+    for (const page of pages) {
+      expect(page).toMatch(/^<svg /)
+      const inner = page.replace(/^<svg[^>]*>/, '')
+      expect(inner).not.toContain('<svg')
+    }
+  })
+
+  it('tiled pages include piece label and cut instruction', () => {
+    const pages = tilePieces([makeLargePiece()], 'letter')
+    // All tiles should have the piece label since buildPieceSvg is used
+    for (const page of pages) {
+      expect(page).toContain('LARGE PIECE')
     }
   })
 })

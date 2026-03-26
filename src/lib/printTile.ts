@@ -1,5 +1,5 @@
 import type { PatternPiece } from '../types'
-import { buildPieceSvg } from './patternSvg'
+import { buildPieceSvg, PADDING } from './patternSvg'
 
 export const PAPER_SIZES = {
   letter: { width: 215.9, height: 279.4 },
@@ -20,8 +20,8 @@ export function tilePieces(
 
   for (let i = 0; i < pieces.length; i++) {
     const piece = pieces[i]
-    const pw = piece.boundingBox.width + 40 // +padding from patternSvg
-    const ph = piece.boundingBox.height + 40
+    const pw = piece.boundingBox.width + PADDING * 2
+    const ph = piece.boundingBox.height + PADDING * 2
 
     // If fits on one page, emit single page
     if (pw <= printW && ph <= printH) {
@@ -43,14 +43,21 @@ export function tilePieces(
         const pageNum = pages.length + 1
         const isFirst = pages.length === 0
 
+        const innerContent = buildPieceSvg(piece, { standalone: false })
+        const clipId = `clip-${pageNum}`
+
         const tileSvg = `<svg xmlns="http://www.w3.org/2000/svg"
           width="${paper.width}mm" height="${paper.height}mm"
           viewBox="0 0 ${paper.width} ${paper.height}">
-          <g transform="translate(${MARGIN - offsetX} ${MARGIN - offsetY})">
-            <path d="${piece.cutPath}" fill="none" stroke="black" stroke-width="0.5"/>
-            <path d="${piece.sewingPath}" fill="none" stroke="black" stroke-width="0.5" stroke-dasharray="3 3"/>
+          <defs>
+            <clipPath id="${clipId}">
+              <rect x="${MARGIN}" y="${MARGIN}" width="${paper.width - MARGIN * 2}" height="${paper.height - MARGIN * 2}"/>
+            </clipPath>
+          </defs>
+          <g clip-path="url(#${clipId})" transform="translate(${MARGIN - offsetX} ${MARGIN - offsetY})">
+            ${innerContent}
           </g>
-          ${overlapMarks(paper, MARGIN, OVERLAP, col, row, cols, rows)}
+          ${overlapMarks(paper, MARGIN, OVERLAP, col, row, cols, rows, pageNum)}
           ${isFirst ? calibrationSquare(paper) : ''}
           <text x="${paper.width - MARGIN}" y="${paper.height - MARGIN + 5}"
             text-anchor="end" font-size="3" font-family="Arial,sans-serif">
@@ -101,19 +108,20 @@ function overlapMarks(
   row: number,
   cols: number,
   rows: number,
+  pageNum: number,
 ): string {
   const marks: string[] = []
   if (col < cols - 1) {
     const x = paper.width - margin - overlap
     marks.push(`<line x1="${x}" y1="${margin}" x2="${x}" y2="${paper.height - margin}"
       stroke="black" stroke-width="0.3" stroke-dasharray="2 2"/>
-    <text x="${x + 1}" y="${paper.height / 2}" font-size="3" font-family="Arial,sans-serif">→ pg ${col + 2}</text>`)
+    <text x="${x + 1}" y="${paper.height / 2}" font-size="3" font-family="Arial,sans-serif">→ pg ${pageNum + 1}</text>`)
   }
   if (row < rows - 1) {
     const y = paper.height - margin - overlap
     marks.push(`<line x1="${margin}" y1="${y}" x2="${paper.width - margin}" y2="${y}"
       stroke="black" stroke-width="0.3" stroke-dasharray="2 2"/>
-    <text x="${paper.width / 2}" y="${y - 1}" text-anchor="middle" font-size="3" font-family="Arial,sans-serif">↓ pg ${row + 2}</text>`)
+    <text x="${paper.width / 2}" y="${y - 1}" text-anchor="middle" font-size="3" font-family="Arial,sans-serif">↓ pg ${pageNum + cols}</text>`)
   }
   return marks.join('\n')
 }

@@ -1,7 +1,7 @@
 import type { PatternPiece, FoldEdge } from '../types'
 
 export const PIECE_FONT = 'font-family="Arial, sans-serif"'
-const PADDING = 25   // mm of space around piece
+export const PADDING = 25   // mm of space around piece
 const BANNER_W = 10  // mm height/width of PLACE ON FOLD banner
 
 export interface SvgOptions {
