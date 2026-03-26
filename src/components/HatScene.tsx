@@ -86,7 +86,7 @@ function StandinHead({ headCircumference, hatBottomY, MM }: StandinHeadProps) {
   const r = (headCircumference / (2 * Math.PI)) * MM
   const headRadiusY = r * 1.25
   const headCenterY = hatBottomY - headRadiusY
-  const neckCenterY = headCenterY - headRadiusY - 30 * MM
+  const neckCenterY = headCenterY - headRadiusY - neckHeight / 2
   const neckRadius = r * 0.55
   const neckHeight = 60 * MM
 
@@ -128,8 +128,13 @@ export function HatScene({ params, fabricUrl, hatColor, showHead }: Props) {
     brimInner, brimWidth: params.brimWidth, rBottom, brimDrop, MM,
   }
 
+  const cameraPos: [number, number, number] = showHead
+    ? [0, -0.05, 0.55]
+    : [0, 0.15, 0.35]
+  const cameraFov = showHead ? 50 : 45
+
   return (
-    <Canvas camera={{ position: [0, 0.15, 0.35], fov: 45 }} shadows>
+    <Canvas camera={{ position: cameraPos, fov: cameraFov }} shadows>
       <ambientLight intensity={0.6} />
       <directionalLight position={[2, 4, 2]} intensity={1} castShadow shadow-mapSize={[1024, 1024]} />
       <Environment preset="city" />
