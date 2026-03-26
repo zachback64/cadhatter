@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { AppPage } from './App'
+import { AppPage, SWATCHES } from './App'
 
 // Mock HatScene — Three.js/WebGL doesn't work in jsdom
 vi.mock('../components/HatScene', () => ({
@@ -46,15 +46,6 @@ test('revokes URL on unmount if texture is loaded', () => {
   unmount()
   expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url')
 })
-
-const SWATCHES = [
-  { name: 'Natural', hex: '#f0ece4' },
-  { name: 'Navy', hex: '#1e3a5f' },
-  { name: 'Black', hex: '#1a1a1a' },
-  { name: 'Olive', hex: '#6b7c45' },
-  { name: 'Burgundy', hex: '#6e1c2e' },
-  { name: 'Sand', hex: '#c8a96e' },
-]
 
 test('renders color swatches in 3D tab', () => {
   render(<AppPage />)

@@ -5,6 +5,8 @@ import { computeCrown } from '../lib/hatMath'
 import * as THREE from 'three'
 import { TextureLoader } from 'three'
 
+const DEFAULT_HAT_COLOR = '#f0ece4'
+
 interface HatMeshProps {
   sideRadiusTop: number
   sideRadiusBottom: number
@@ -105,7 +107,7 @@ export function HatScene({ params, fabricUrl, hatColor }: Props) {
       {/* Hat meshes — plain or fabric-textured */}
       {fabricUrl
         ? <FabricHat fabricUrl={fabricUrl} {...hatMeshProps} />
-        : <PlainHat hatColor={hatColor ?? '#f0ece4'} {...hatMeshProps} />
+        : <PlainHat hatColor={hatColor ?? DEFAULT_HAT_COLOR} {...hatMeshProps} />
       }
 
       {/* Brim stitch — torus at outer brim edge */}

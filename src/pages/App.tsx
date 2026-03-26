@@ -8,7 +8,7 @@ import { PatternView } from '../components/PatternView'
 
 type Tab = '3d' | 'pattern'
 
-const SWATCHES = [
+export const SWATCHES = [
   { name: 'Natural',  hex: '#f0ece4' },
   { name: 'Navy',     hex: '#1e3a5f' },
   { name: 'Black',    hex: '#1a1a1a' },
@@ -21,7 +21,7 @@ export function AppPage() {
   const [params, setParams] = useState<HatParams>(DEFAULT_PARAMS)
   const [tab, setTab] = useState<Tab>('3d')
   const [fabricUrl, setFabricUrl] = useState<string | null>(null)
-  const [hatColor, setHatColor] = useState('#f0ece4')
+  const [hatColor, setHatColor] = useState(SWATCHES[0].hex)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const fabricUrlRef = useRef<string | null>(null)
 
