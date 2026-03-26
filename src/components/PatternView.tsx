@@ -1,6 +1,10 @@
+import { useState } from 'react'
 import type { PatternPiece, HatParams } from '../types'
-import { buildPieceSvg, buildAllPiecesSvg } from '../lib/patternSvg'
-import { tilePieces } from '../lib/printTile'
+import { buildAllPiecesSvg } from '../lib/patternSvg'
+import { tilePieces, PAPER_SIZES } from '../lib/printTile'
+
+const THUMB_W = 280
+const MM_TO_PX = 3.7795
 
 interface Props {
   pieces: PatternPiece[]
@@ -9,6 +13,14 @@ interface Props {
 }
 
 export function PatternView({ pieces, params, onParamsChange }: Props) {
+  const [selectedPage, setSelectedPage] = useState<number | null>(null)
+
+  const paper = PAPER_SIZES[params.paperSize]
+  const scale = THUMB_W / (paper.width * MM_TO_PX)
+  const thumbH = Math.round(paper.height * MM_TO_PX * scale)
+
+  const pages = tilePieces(pieces, params.paperSize)
+
   const handleDownload = () => {
     const svg = buildAllPiecesSvg(pieces)
     const blob = new Blob([svg], { type: 'image/svg+xml' })
@@ -21,7 +33,6 @@ export function PatternView({ pieces, params, onParamsChange }: Props) {
   }
 
   const handlePrint = () => {
-    const pages = tilePieces(pieces, params.paperSize)
     const html = `<!DOCTYPE html><html><head>
       <style>
         @page { size: ${params.paperSize === 'letter' ? '8.5in 11in' : 'A4'}; margin: 0; }
@@ -44,18 +55,60 @@ export function PatternView({ pieces, params, onParamsChange }: Props) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Pattern pieces scroll area */}
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-50 flex flex-col gap-6 items-center">
-        {pieces.map((piece) => (
-          <div key={piece.id} className="bg-white rounded shadow-sm p-2">
-            <div
-              dangerouslySetInnerHTML={{
-                __html: buildPieceSvg(piece),
-              }}
-            />
-          </div>
-        ))}
+      {/* Gallery grid */}
+      <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+        <div className="grid grid-cols-2 gap-6 justify-items-center">
+          {pages.map((page, i) => (
+            <div key={i} className="flex flex-col items-center gap-1.5">
+              <button
+                onClick={() => setSelectedPage(i)}
+                className="bg-white rounded shadow-sm cursor-pointer hover:shadow-md transition-shadow overflow-hidden"
+                style={{ width: THUMB_W, height: thumbH }}
+                aria-label={`View page ${i + 1}`}
+              >
+                <div
+                  style={{
+                    transform: `scale(${scale})`,
+                    transformOrigin: 'top left',
+                    width: Math.round(paper.width * MM_TO_PX),
+                    height: Math.round(paper.height * MM_TO_PX),
+                    pointerEvents: 'none',
+                  }}
+                  dangerouslySetInnerHTML={{ __html: page }}
+                />
+              </button>
+              <span className="text-xs text-gray-500">Page {i + 1} of {pages.length}</span>
+            </div>
+          ))}
+        </div>
       </div>
+
+      {/* Full-size modal */}
+      {selectedPage !== null && (
+        <div
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+          onClick={() => setSelectedPage(null)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-2xl max-w-[92vw] max-h-[92vh] overflow-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 sticky top-0 bg-white">
+              <span className="text-sm font-medium text-gray-700">
+                Page {selectedPage + 1} of {pages.length}
+              </span>
+              <button
+                onClick={() => setSelectedPage(null)}
+                className="text-gray-400 hover:text-gray-700 text-xl leading-none"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-4" dangerouslySetInnerHTML={{ __html: pages[selectedPage] }} />
+          </div>
+        </div>
+      )}
 
       {/* Footer: download + print + paper size */}
       <div className="border-t border-gray-200 bg-white px-4 py-3 flex items-center gap-3">
