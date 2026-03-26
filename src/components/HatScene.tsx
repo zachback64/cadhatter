@@ -76,19 +76,49 @@ function FabricHat({ fabricUrl, sideRadiusTop, sideRadiusBottom, sideHeight, bri
   )
 }
 
+interface StandinHeadProps {
+  headCircumference: number  // mm
+  hatBottomY: number         // Three.js units — y of hat bottom edge
+  MM: number
+}
+
+function StandinHead({ headCircumference, hatBottomY, MM }: StandinHeadProps) {
+  const r = (headCircumference / (2 * Math.PI)) * MM
+  const headRadiusY = r * 1.25
+  const headCenterY = hatBottomY - headRadiusY
+  const neckCenterY = headCenterY - headRadiusY - 30 * MM
+  const neckRadius = r * 0.55
+  const neckHeight = 60 * MM
+
+  return (
+    <>
+      <mesh position={[0, headCenterY, 0]} scale={[1, 1.25, 1]} castShadow>
+        <sphereGeometry args={[r, 32, 32]} />
+        <meshStandardMaterial color="#c8956c" />
+      </mesh>
+      <mesh position={[0, neckCenterY, 0]} castShadow>
+        <cylinderGeometry args={[neckRadius, neckRadius, neckHeight, 32]} />
+        <meshStandardMaterial color="#c8956c" />
+      </mesh>
+    </>
+  )
+}
+
 interface Props {
   params: HatParams
   fabricUrl?: string
   hatColor?: string
+  showHead?: boolean
 }
 
-export function HatScene({ params, fabricUrl, hatColor }: Props) {
+export function HatScene({ params, fabricUrl, hatColor, showHead }: Props) {
   const MM = 0.001 // convert mm to Three.js units (1 unit = 1m)
   const { rBottom, rCrown } = computeCrown(params)
 
   const sideRadiusTop = rCrown * MM
   const sideRadiusBottom = rBottom * MM
   const sideHeight = params.hatHeight * MM
+  const hatBottomY = -sideHeight / 2
   const brimInner = rBottom * MM  // inner horizontal radius (unchanged name, same value)
   const phi = (params.brimAngle * Math.PI) / 180
   const brimDrop = params.brimWidth * Math.tan(phi) * MM  // vertical droop of outer edge
@@ -109,6 +139,14 @@ export function HatScene({ params, fabricUrl, hatColor }: Props) {
         ? <FabricHat fabricUrl={fabricUrl} {...hatMeshProps} />
         : <PlainHat hatColor={hatColor ?? DEFAULT_HAT_COLOR} {...hatMeshProps} />
       }
+
+      {showHead && (
+        <StandinHead
+          headCircumference={params.headCircumference}
+          hatBottomY={hatBottomY}
+          MM={MM}
+        />
+      )}
 
       {/* Brim stitch — torus at outer brim edge */}
       <mesh

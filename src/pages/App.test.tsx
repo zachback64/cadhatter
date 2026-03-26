@@ -64,3 +64,14 @@ test('swatches are disabled when fabric is loaded', () => {
   expect(swatchBar).toHaveStyle('pointer-events: none')
   expect(swatchBar).toHaveStyle('opacity: 0.4')
 })
+
+test('toggle head button shows and hides stand-in head', () => {
+  render(<AppPage />)
+  // Button should be present in 3D tab
+  const toggleBtn = screen.getByRole('button', { name: /show head/i })
+  expect(toggleBtn).toBeInTheDocument()
+
+  // After clicking, it should say "Hide head"
+  fireEvent.click(toggleBtn)
+  expect(screen.getByRole('button', { name: /hide head/i })).toBeInTheDocument()
+})

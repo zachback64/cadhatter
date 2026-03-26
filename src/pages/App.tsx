@@ -22,6 +22,7 @@ export function AppPage() {
   const [tab, setTab] = useState<Tab>('3d')
   const [fabricUrl, setFabricUrl] = useState<string | null>(null)
   const [hatColor, setHatColor] = useState(SWATCHES[0].hex)
+  const [showHead, setShowHead] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const fabricUrlRef = useRef<string | null>(null)
 
@@ -94,8 +95,8 @@ export function AppPage() {
           <div className="flex-1 overflow-hidden">
             {tab === '3d' ? (
               <div className="relative h-full">
-                <HatScene params={params} fabricUrl={fabricUrl ?? undefined} hatColor={hatColor} />
-                <div className="absolute top-2 right-2">
+                <HatScene params={params} fabricUrl={fabricUrl ?? undefined} hatColor={hatColor} showHead={showHead} />
+                <div className="absolute top-2 right-2 flex flex-col items-end gap-2">
                   {fabricUrl ? (
                     <button
                       onClick={handleRemoveFabric}
@@ -111,6 +112,12 @@ export function AppPage() {
                       Upload fabric
                     </button>
                   )}
+                  <button
+                    onClick={() => setShowHead(h => !h)}
+                    className="text-sm bg-white border border-gray-300 rounded px-3 py-1 shadow-sm hover:bg-gray-50"
+                  >
+                    {showHead ? 'Hide head' : 'Show head'}
+                  </button>
                 </div>
 
                 {/* Color swatch bar */}
