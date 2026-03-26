@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import type { PatternPiece, HatParams } from '../types'
 import { buildAllPiecesSvg } from '../lib/patternSvg'
 import { tilePieces, PAPER_SIZES } from '../lib/printTile'
@@ -19,7 +20,25 @@ export function PatternView({ pieces, params, onParamsChange }: Props) {
   const scale = THUMB_W / (paper.width * MM_TO_PX)
   const thumbH = Math.round(paper.height * MM_TO_PX * scale)
 
-  const pages = tilePieces(pieces, params.paperSize)
+  const pages = useMemo(
+    () => tilePieces(pieces, params.paperSize),
+    [pieces, params.paperSize],
+  )
+
+  useEffect(() => {
+    if (selectedPage !== null && selectedPage >= pages.length) {
+      setSelectedPage(null)
+    }
+  }, [pages.length, selectedPage])
+
+  useEffect(() => {
+    if (selectedPage === null) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedPage(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [selectedPage])
 
   const handleDownload = () => {
     const svg = buildAllPiecesSvg(pieces)
@@ -84,7 +103,7 @@ export function PatternView({ pieces, params, onParamsChange }: Props) {
       </div>
 
       {/* Full-size modal */}
-      {selectedPage !== null && (
+      {selectedPage !== null && createPortal(
         <div
           className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
           onClick={() => setSelectedPage(null)}
@@ -107,7 +126,8 @@ export function PatternView({ pieces, params, onParamsChange }: Props) {
             </div>
             <div className="p-4" dangerouslySetInnerHTML={{ __html: pages[selectedPage] }} />
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
 
       {/* Footer: download + print + paper size */}
