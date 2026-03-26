@@ -4,7 +4,7 @@ export const PIECE_FONT = 'font-family="Arial, sans-serif"'
 const PADDING = 25   // mm of space around piece
 const BANNER_W = 10  // mm height/width of PLACE ON FOLD banner
 
-interface SvgOptions {
+export interface SvgOptions {
   standalone?: boolean  // default true; false = return inner <g> content without <svg> wrapper
 }
 
@@ -17,7 +17,8 @@ export function buildPieceSvg(piece: PatternPiece, opts: SvgOptions = {}): strin
   const ty = PADDING - minY
 
   const notchMarks = piece.notches.map(n => {
-    const len = 3, hw = 0.5
+    const len = 3
+    const hw = 0.5
     return `<rect class="notch" x="${n.x - hw}" y="${n.y - len / 2}" width="${hw * 2}" height="${len}"
       transform="rotate(${(n.angle * 180) / Math.PI} ${n.x} ${n.y})"
       fill="black" stroke="none"/>`
@@ -25,12 +26,13 @@ export function buildPieceSvg(piece: PatternPiece, opts: SvgOptions = {}): strin
 
   const foldBanners = buildFoldBanners(piece.foldEdges)
 
+  // cutCount===2 only occurs on the brim; goreCount∈{1,4,6,8} so side panels never hit this
   const cutInstruction = piece.cutCount === 2
     ? 'CUT 2 - PRIMARY FABRIC / CUT 2 - SECONDARY FABRIC'
     : `CUT ${piece.cutCount}`
 
-  const labelX = minX + width / 2
-  const labelY = minY + height / 2
+  const labelX = vw / 2
+  const labelY = vh / 2
   const label = `
     <text x="${labelX}" y="${labelY - 12}" text-anchor="middle" font-size="13" font-weight="bold" ${PIECE_FONT}>${piece.label}</text>
     <text x="${labelX}" y="${labelY + 5}" text-anchor="middle" font-size="7" ${PIECE_FONT}>${cutInstruction}</text>
